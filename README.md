@@ -181,12 +181,275 @@ python:
 
 **Estructura del nombre:**
 
-deltalakeall.default.firstdeltaapi
-    │         │           │
-    │         │           └─► Nombre de la tabla (firstdeltaapi)
-    │         └─────────────► Esquema/Database (default)
-    └───────────────────────► Catálogo (deltalakeall)
+![image](https://github.com/user-attachments/assets/41cab9d0-91ee-43c5-9573-3ef65c200522)
 
+___________________________________________________________________________________________________________________
+📌 Equivalente a: "La tabla se llamará firstdeltaapi dentro del esquema default del catálogo deltalakeall."
+En Databricks Unity Catalog, el formato es:
+
+<catalog_name>.<schema_name>.<table_name>
+__________________________________________________________________________________________________________________
+Línea 3: Columna ID (Auto-incremental)
+
+python:
+
+        .addColumn("id_col", dataType=LongType(), generatedAlwaysAs=IdentityGenerator()) \
+
+
+**Explicación:**
+
+| Componente | Significado |
+|------------|-------------|
+| .addColumn() | Método que agrega una nueva columna a la tabla |
+| "id_col" | Nombre de la columna |
+| dataType=LongType() | Tipo de dato: LongType (entero de 64 bits) |
+| generatedAlwaysAs=IdentityGenerator() | Configuración clave: Define que esta columna es una columna de identidad |
+
+
+¿Qué hace IdentityGenerator()?
+
+python:
+
+        IdentityGenerator()
+
+        
+•	📌 Equivalente a SQL: GENERATED ALWAYS AS IDENTITY
+•	📌 Comportamiento:
+o	✅ Los valores se generan automáticamente al insertar datos
+o	✅ No puedes insertar manualmente valores en esta columna (es generada siempre)
+o	✅ Comienza en 1 y se incrementa de 1 en 1 (por defecto)
+o	✅ Garantiza unicidad y secuencia (ideal para claves primarias)
+
+
+Alternativas a IdentityGenerator():
+
+python:
+
+# Si quisieras permitir insertar valores manuales
+
+generatedAlwaysAs=IdentityGenerator(start=1, step=1, allowExplicitInsert=True)
+
+📌 Equivalente a: "Crea una columna llamada id_col que sea un número entero largo (LongType) y que se genere automáticamente como una secuencia de identidad, como un auto-incremental en bases de datos tradicionales."
+________________________________________________________________________________________________________________________________________
+Línea 4: Columna Salary
+
+python:
+
+        .addColumn("salary", dataType=IntegerType()) \
+
+        
+**Explicación:**
+
+| Componente | Significado |
+|------------|-------------|
+| .addColumn() | Agrega otra columna |
+| "salary" | Nombre de la columna |
+| dataType=IntegerType() | Tipo de dato: IntegerType (entero de 32 bits) |
+
+📌 Equivalente a: "Crea una columna llamada salary que almacene números enteros (IntegerType) para representar el salario."
+Nota: Esta columna no es auto-generada; tendrás que proporcionar valores al insertar.
+_______________________________________________________________________________________________________________________________________
+Línea 5: Columna Name
+
+python:
+
+        .addColumn("name", dataType=StringType()) \
+
+**Explicación:**
+Componente	Significado
+.addColumn()	Agrega otra columna
+"name"	Nombre de la columna
+dataType=StringType()	Tipo de dato: StringType (cadena de texto)
+📌 Equivalente a: "Crea una columna llamada name que almacene texto (StringType) para el nombre de la persona."
+______________________________________________________________________________________________________________________________________
+Línea 6: Ejecutar la creación
+
+python:
+
+        .execute()
+        
+**Explicación:**
+
+| Componente | Significado |
+|------------|-------------|
+| .execute() | Método que finalmente ejecuta la creación de la tabla en el catálogo de Spark |
+
+
+📌 Equivalente a: "¡Ejecuta todos los pasos anteriores y crea la tabla en el metastore de Hive/Unity Catalog!"
+
+____________________________________________________________________________________________________________________________________
+**📊 Resultado: La Tabla Creada**
+
+Esquema de la Tabla:
+
+| Columna | Tipo | Descripción |
+|---------|------|-------------|
+| id_col | BIGINT (LongType) | Auto-generado (IDENTITY), clave primaria |
+| salary | INT (IntegerType) | Salario del empleado |
+| name | STRING (StringType) | Nombre del empleado |
+
+
+Propiedades de la Tabla:
+
+sql:
+
+     -- Equivalente en SQL
+     CREATE TABLE deltalakeall.default.firstdeltaapi (
+         id_col BIGINT GENERATED ALWAYS AS IDENTITY,
+         salary INT,
+         name STRING
+     )
+     USING DELTA;
+____________________________________________________________________________________________________________________________________
+
+💡 Insertar Datos en Esta Tabla
+
+✅ Correcto (No especificas id_col)
+
+python:
+
+        # INSERT: No incluyes id_col porque se genera automáticamente
+        spark.sql("""
+            INSERT INTO deltalakeall.default.firstdeltaapi (salary, name)
+            VALUES 
+                (50000, 'Juan Pérez'),
+                (60000, 'María García'),
+                (55000, 'Carlos López')
+       """)
+
+
+
+# Resultado:
+
+# id_col = 1, salary = 50000, name = 'Juan Pérez'
+
+# id_col = 2, salary = 60000, name = 'María García'
+
+# id_col = 3, salary = 55000, name = 'Carlos López'
+
+❌ Incorrecto (Intentas insertar id_col manualmente)
+
+python:
+
+        # ERROR: No puedes insertar en id_col porque es GENERATED ALWAYS
+        spark.sql("""
+            INSERT INTO deltalakeall.default.firstdeltaapi (id_col, salary, name)
+            VALUES (100, 50000, 'Juan Pérez')
+        """)
+        
+# ❌ Error: Column 'id_col' is an identity column and cannot be specified
+
+
+### Compute Columns
+
+![image](https://github.com/user-attachments/assets/06250e26-5fcb-436b-9b1f-5917a1fbfa3a)
+
+Código:
+
+        DeltaTable.createOrReplace(spark) \
+          .tableName("deltalakeall.default.firstdeltaapi") \
+          .addColumn("salaryAfterTax", dataType=DecimalType(12, 1), generatedAlwaysAs="salary * 0.7") \
+          .addColumn("salary", dataType=IntegerType()) \
+          .addColumn("name", dataType=StringType()) \
+          .execute()
+
+
+![image](https://github.com/user-attachments/assets/a6b0bcee-68fe-4323-8f4e-838e594cb952)
+
+sql:
+
+     INSERT INTO deltalakeall.default.firstdeltaapi(salary,name)
+     VALUES
+     (100,'aa'),
+     (200,'bb')
+
+
+![image](https://github.com/user-attachments/assets/0d9feea3-6687-4f36-a362-a5b41203afc5)
+
+Código:
+                
+        select * from deltalakeall.default.firstdeltaapi
+
+
+![image](https://github.com/user-attachments/assets/aee7a075-030a-4975-b877-93f8e81ed6d9)
+
+Ahora vamos a crear un volumen, para ello vamos a catalogo, luego seleccionamos deltalakeall y dentro de ella default, luego hacemos click en crear de la ventana desplegable seleccionamos volumen y le signamos un nombre (deltavol).
+
+![image](https://github.com/user-attachments/assets/7e175598-fbef-48ee-ab81-e73c1a7bdd6f)
+
+Luego vamos a workspace y creamos un nuevo notebook.
+
+No olvidar enceder el servidor.
+
+![image](https://github.com/user-attachments/assets/13ed0bfd-69a3-4124-acfb-0a77db808329)
+
+### Delta Log
+
+Pasamos el siguiente código en la celda.
+
+Python:
+
+        data = [(1, 100, 'aa'),(2, 200, 'bb'),(3, 300, 'cc'),(4, 400, 'dd')]
+        df = spark.createDataFrame(data, ['id', 'salary', 'name'])
+        display(df)
+
+
+![image](https://github.com/user-attachments/assets/1a6ff7ee-501b-4336-a09c-fc9a86de7d72)
+
+Ahora creamos un directorio en deltavol
+
+![image](https://github.com/user-attachments/assets/85b61548-9213-46fb-a725-f58d3ba960d9)
+
+/Volumes/deltalakeall/default/deltavol/demosink/
+
+![image](https://github.com/user-attachments/assets/cf3a0b96-7759-45ab-912c-269266929357)
+
+Ahora volvemos al notebook
+
+Python:
+
+        df.write.format("delta")\
+            .mode("append")\
+            .save("/Volumes/deltalakeall/default/deltavol/demosink/")
+
+
+![image](https://github.com/user-attachments/assets/7501e02d-51f0-4ae7-9310-646a7e02e60f)
+
+Luego comprobamos que se guardado.
+
+![image](https://github.com/user-attachments/assets/f337a145-ef6a-48bc-8f29-f0164c6b965a)
+
+Ahora leeremos los datos.
+
+Python:
+
+        df = spark.read.format('json')\
+            .load('/Volumes/deltalakeall/default/deltavol/demosink/_delta_log/00000000000000000001.json')
+        display(df)
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
 
 ![image]()
 
