@@ -61,16 +61,37 @@ Vamos a conector apache spark
 
 ![image](https://github.com/user-attachments/assets/5f363850-47a8-4a7d-ba0e-ae0ee337663a)
 
-    ![image]()
+Luego bajamos hasta la sección DeltaTableBuilder.
 
-    ![image]()
+![image](https://github.com/user-attachments/assets/21e0540a-50ef-4ca1-b33d-c47b2f0972fd)
 
-    ![image]()
+Luego pegamos lo seleccionado en una celda de Databricks.
 
-    ![image]()
+![image](https://github.com/user-attachments/assets/19e41680-4a1c-4783-b0c3-178a0a33685b)
 
-    ![image]()
+Luego para mantener la misma estructura del ejemplo anterior, quitamos las filas que están demás.
 
-    ![image]()
+![image](https://github.com/user-attachments/assets/49bd28d0-95aa-40c3-978a-d5c01b4b33ec)
 
-    ![image]()
+![image](https://github.com/user-attachments/assets/95f2eff1-d951-4d86-972d-878f3f419343)
+
+Luego cambiamos el nombre de la tabla.
+
+![image](https://github.com/user-attachments/assets/eb103281-53dc-4130-a23a-f63821ab565b)
+
+El código final es el siguiente:
+
+Código:
+
+  DeltaTable.createIfNotExists(spark) \
+    .tableName("deltalakeall.default.firstdeltaapi") \
+    .addColumn("id", "INT") \
+    .addColumn("salary", "INT") \
+    .execute()
+
+Y finalmente lo ejecutamos.
+
+
+![image]()
+
+![image]()
