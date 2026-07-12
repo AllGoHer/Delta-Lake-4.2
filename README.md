@@ -117,9 +117,76 @@ Identity Columns
 
 ![image](https://github.com/user-attachments/assets/dd91a66a-beb9-4ab4-aeff-b75da9315664)
 
-![image]()
+Python:
 
-![image]()
+        from pyspark.sql.functions import *
+        from pyspark.sql.types import *
+        from delta.tables import DeltaTable, IdentityGenerator
+
+
+![image](https://github.com/user-attachments/assets/51388639-8bce-4c85-addc-0bdd9df87db7)
+
+Código:
+
+        DeltaTable.create(spark) \
+           .tableName("deltalakeall.default.firstdeltaapi") \
+           .addColumn("id_col", dataType=LongType(), generatedAlwaysAs=IdentityGenerator()) \
+           .addColumn("salary", dataType=IntegerType()) \
+           .addColumn("name", dataType=StringType()) \
+           .execute()
+
+
+![image](https://github.com/user-attachments/assets/72eed384-f584-449a-a2df-ad2117027f2c)
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### 📚 Visión General
+
+Este código crea una tabla Delta Lake llamada deltalakeall.default.firstdeltaapi con 3 columnas, donde una de ellas (id_col) es una columna de identidad auto-incremental (como un IDENTITY en SQL Server o AUTO_INCREMENT en MySQL).
+__________________________________________________________________________________________________________
+🔍 Desglose Línea por Línea
+
+Línea 1: Inicio de la construcción
+
+Código:
+               
+         DeltaTable.create(spark) \
+
+**Explicación:**
+
+| Componente | Significado |
+|------------|-------------|
+| DeltaTable | Clase principal de Delta Lake para interactuar con tablas (crear, leer, actualizar, etc.) |
+| .create() | Método estático que inicia el proceso de creación de una nueva tabla Delta |
+| spark | La sesión de Spark activa (necesaria para ejecutar operaciones en el cluster) |
+| \ | Carácter de continuación en Python (permite escribir el código en varias líneas) |
+
+
+📌 Equivalente a: "Quiero crear una nueva tabla Delta usando la sesión de Spark que ya tengo activa."
+
+_____________________________________________________________________________________________________________
+Línea 2: Nombre de la tabla
+
+python:
+
+        .tableName("deltalakeall.default.firstdeltaapi") \
+
+
+**Explicación:**
+
+| Componente | Significado |
+|------------|-------------|
+| .tableName() | Método que define el nombre de la tabla en el catálogo (Hive Metastore / Unity Catalog) |
+| "deltalakeall.default.firstdeltaapi" | Nombre completo de la tabla (3 niveles) |
+
+
+**Estructura del nombre:**
+
+deltalakeall.default.firstdeltaapi
+    │         │           │
+    │         │           └─► Nombre de la tabla (firstdeltaapi)
+    │         └─────────────► Esquema/Database (default)
+    └───────────────────────► Catálogo (deltalakeall)
+
 
 ![image]()
 
