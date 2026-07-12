@@ -83,14 +83,63 @@ El código final es el siguiente:
 
 Código:
 
-  DeltaTable.createIfNotExists(spark) \
-    .tableName("deltalakeall.default.firstdeltaapi") \
-    .addColumn("id", "INT") \
-    .addColumn("salary", "INT") \
-    .execute()
+        DeltaTable.createIfNotExists(spark) \
+          .tableName("deltalakeall.default.firstdeltaapi") \
+          .addColumn("id", "INT") \
+          .addColumn("salary", "INT") \
+          .execute()
 
 Y finalmente lo ejecutamos.
 
+
+![image](https://github.com/user-attachments/assets/57c1673f-b6b5-49e3-a50a-4b7558020dd7)
+
+Ahora podemos ver que ya tenemos las dos tablas, la que se acaba de ejecutar (firstdeltaapi) y la anterior (first_table)
+
+![image](https://github.com/user-attachments/assets/6cef1abf-2b0c-4f54-ab59-b934e0751857)
+
+Ahora para verificar que se haya creado bien; vamos a catalogo y buscamos el archivo deltalakeall, luego hacemos click en la tabla firstdeltaapi y luego a detalles.
+
+![image](https://github.com/user-attachments/assets/de485596-d3ad-46a9-985b-7d639997ca50)
+
+Ahora eliminamos la tabla para desarrollar el siguiente tema bajo el mismo concepto.
+
+sql:
+
+      DROP TABLE deltalakeall.default.firstdeltaapi
+
+
+![image](https://github.com/user-attachments/assets/19280c43-b15a-48ed-a941-1e592478b04c)
+
+## GENERATED COLUMNS
+
+Identity Columns
+
+![image](https://github.com/user-attachments/assets/dd91a66a-beb9-4ab4-aeff-b75da9315664)
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
+
+![image]()
 
 ![image]()
 
