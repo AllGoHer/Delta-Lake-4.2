@@ -229,11 +229,12 @@ python:
 
 Alternativas a IdentityGenerator():
 
+Si quisieras permitir insertar valores manuales
+
 python:
 
-# Si quisieras permitir insertar valores manuales
-
-generatedAlwaysAs=IdentityGenerator(start=1, step=1, allowExplicitInsert=True)
+         generatedAlwaysAs=IdentityGenerator(start=1, step=1, allowExplicitInsert=True)
+         
 
 📌 Equivalente a: "Crea una columna llamada id_col que sea un número entero largo (LongType) y que se genere automáticamente como una secuencia de identidad, como un auto-incremental en bases de datos tradicionales."
 ________________________________________________________________________________________________________________________________________
