@@ -185,6 +185,7 @@ python:
 
 ___________________________________________________________________________________________________________________
 📌 Equivalente a: "La tabla se llamará firstdeltaapi dentro del esquema default del catálogo deltalakeall."
+
 En Databricks Unity Catalog, el formato es:
 
 <catalog_name>.<schema_name>.<table_name>
@@ -214,11 +215,16 @@ python:
 
         
 •	📌 Equivalente a SQL: GENERATED ALWAYS AS IDENTITY
+
 •	📌 Comportamiento:
-o	✅ Los valores se generan automáticamente al insertar datos
-o	✅ No puedes insertar manualmente valores en esta columna (es generada siempre)
-o	✅ Comienza en 1 y se incrementa de 1 en 1 (por defecto)
-o	✅ Garantiza unicidad y secuencia (ideal para claves primarias)
+
+ o	✅ Los valores se generan automáticamente al insertar datos
+
+ o	✅ No puedes insertar manualmente valores en esta columna (es generada siempre)
+
+ o	✅ Comienza en 1 y se incrementa de 1 en 1 (por defecto)
+
+ o	✅ Garantiza unicidad y secuencia (ideal para claves primarias)
 
 
 Alternativas a IdentityGenerator():
@@ -247,6 +253,7 @@ python:
 | dataType=IntegerType() | Tipo de dato: IntegerType (entero de 32 bits) |
 
 📌 Equivalente a: "Crea una columna llamada salary que almacene números enteros (IntegerType) para representar el salario."
+
 Nota: Esta columna no es auto-generada; tendrás que proporcionar valores al insertar.
 _______________________________________________________________________________________________________________________________________
 Línea 5: Columna Name
@@ -256,10 +263,14 @@ python:
         .addColumn("name", dataType=StringType()) \
 
 **Explicación:**
-Componente	Significado
-.addColumn()	Agrega otra columna
-"name"	Nombre de la columna
-dataType=StringType()	Tipo de dato: StringType (cadena de texto)
+
+| Componente | Significado |
+|------------|-------------|
+| .addColumn() | Agrega otra columna |
+| "name" | Nombre de la columna |
+| dataType=StringType() | Tipo de dato: StringType (cadena de texto) |
+
+
 📌 Equivalente a: "Crea una columna llamada name que almacene texto (StringType) para el nombre de la persona."
 ______________________________________________________________________________________________________________________________________
 Línea 6: Ejecutar la creación
@@ -308,7 +319,7 @@ ________________________________________________________________________________
 
 python:
 
-        # INSERT: No incluyes id_col porque se genera automáticamente
+        --# INSERT: No incluyes id_col porque se genera automáticamente
         spark.sql("""
             INSERT INTO deltalakeall.default.firstdeltaapi (salary, name)
             VALUES 
@@ -319,27 +330,27 @@ python:
 
 
 
-# Resultado:
+ **Resultado:**
 
-# id_col = 1, salary = 50000, name = 'Juan Pérez'
+* id_col = 1, salary = 50000, name = 'Juan Pérez'
 
-# id_col = 2, salary = 60000, name = 'María García'
+*  id_col = 2, salary = 60000, name = 'María García'
 
-# id_col = 3, salary = 55000, name = 'Carlos López'
+* id_col = 3, salary = 55000, name = 'Carlos López'
 
 ❌ Incorrecto (Intentas insertar id_col manualmente)
 
 python:
 
-        # ERROR: No puedes insertar en id_col porque es GENERATED ALWAYS
+        --# ERROR: No puedes insertar en id_col porque es GENERATED ALWAYS
         spark.sql("""
             INSERT INTO deltalakeall.default.firstdeltaapi (id_col, salary, name)
             VALUES (100, 50000, 'Juan Pérez')
         """)
         
-# ❌ Error: Column 'id_col' is an identity column and cannot be specified
+ ❌ Error: Column 'id_col' is an identity column and cannot be specified
 
-
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
 ### Compute Columns
 
 ![image](https://github.com/user-attachments/assets/06250e26-5fcb-436b-9b1f-5917a1fbfa3a)
@@ -383,6 +394,7 @@ No olvidar enceder el servidor.
 
 ![image](https://github.com/user-attachments/assets/13ed0bfd-69a3-4124-acfb-0a77db808329)
 
+___________________________________________________________________________________________________________________________________________________________________________________________________________________________
 ### Delta Log
 
 Pasamos el siguiente código en la celda.
