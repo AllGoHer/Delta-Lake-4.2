@@ -440,50 +440,462 @@ Python:
             .load('/Volumes/deltalakeall/default/deltavol/demosink/_delta_log/00000000000000000001.json')
         display(df)
 
-![image]()
 
-![image]()
 
-![image]()
+![image](https://github.com/user-attachments/assets/d2f61a51-9ae4-4e52-8471-c362a876225e)
 
-![image]()
+Ahora creamos un nuevo cuaderno (3_deltalake).
 
-![image]()
+Schema Enforcement
 
-![image]()
+Código:
 
-![image]()
+        data = [(1, 100, 'aa', 1),(2, 200, 'bb', 1),(3, 300, 'cc', 1),(4, 400, 'dd', 1)]
+        df = spark.createDataFrame(data, ['id', 'salary', 'name', 'sus_col'])
+        display(df)
 
-![image]()
 
-![image]()
+![image](https://github.com/user-attachments/assets/ef05db29-3f36-44a1-afec-cca40c4527a5)
 
-![image]()
+El sistema delta no permitirá guardar datso de este esquema.
 
-![image]()
+Schema Evolution
 
-![image]()
+Código:
 
-![image]()
+        df.write.format("delta")\
+                .mode("append")\
+                .option("mergeSchema", True)\  #merge fusiona el esquema
+                .save("/Volumes/deltalakeall/default/deltavol/demosink/")
 
-![image]()
+Reading data with Data Lake
 
-![image]()
+sql:
 
-![image]()
+     SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/demosink/`
 
-![image]()
 
-![image]()
+![image](https://github.com/user-attachments/assets/a2d31e52-1eb8-4053-a6f2-7685a63bd6c9)
 
-![image]()
+Schema Overwrite
 
-![image]()
+Código:
 
-![image]()
+        data = [(1, 100, 'aa', 1),(2, 200, 'bb', 1),(3, 300, 'cc', 1),(4, 400, 'dd', 1)]
+        df = spark.createDataFrame(data, ['cust_id', 'income', 'name', 'tip'])
+        display(df)
 
-![image]()
 
-![image]()
+![image](https://github.com/user-attachments/assets/e6518ed5-b607-4f89-a270-f65a1a4b11ed)
 
-![image]()
+Código:
+
+        df.write.format("delta")\
+                .mode("overwrite")\
+                .option("overwriteSchema", True)\
+                .save("/Volumes/deltalakeall/default/deltavol/demosink/")
+
+
+![image](https://github.com/user-attachments/assets/56400996-1398-4128-a2e2-bc652b5207cd)
+
+Código:
+
+        SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/demosink/`
+
+Después de este código podremos ver que ya se sobrescribió esta nueva tabla sobre la anterior.
+
+* Nueva tabla
+
+![image](https://github.com/user-attachments/assets/f4bd9e34-7e97-4603-af91-274502495ee4)
+
+* Anterior tabla.
+
+![image](https://github.com/user-attachments/assets/4d8d3c71-bdfb-49fa-82dd-9330407843f3)
+
+•	Ahora creamos un nuevo cuaderno (4_deltalake)
+
+Nos vamos a catalogo y creamos un nuevo directorio en deltavol, llamado dmlsink 
+
+
+![image](https://github.com/user-attachments/assets/a8d9eee7-4f18-42f2-ba10-07261da2613c)
+
+![image](https://github.com/user-attachments/assets/191efdb5-512b-48b6-a124-82f05b9177ca)
+
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### DML
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+
+Python:
+
+        data = [(1, 100, 'aa', 1),(2, 200, 'bb', 1),(3, 300, 'cc', 1),(4, 400, 'dd', 1)]
+        df = spark.createDataFrame(data, ['cust_id', 'income', 'name', 'tip'])
+
+        df.write.format("delta")\
+                .mode("append")\
+                .save("/Volumes/deltalakeall/default/deltavol/dmlsink/")
+
+
+![image](https://github.com/user-attachments/assets/d03c4141-a07b-420d-92a7-29d4d1d7745f)
+
+•	Ahora vamos que sucede si modificamos la numeración del set de datos.
+
+Python:
+
+        data = [(5, 100, 'aa', 1),(6, 200, 'bb', 1),(7, 300, 'cc', 1),(8, 400, 'dd', 1)]
+        df = spark.createDataFrame(data, ['cust_id', 'income', 'name', 'tip'])
+
+        df.write.format("delta")\
+                .mode("append")\
+                .save("/Volumes/deltalakeall/default/deltavol/dmlsink/")
+
+•	Luego mostramos la tabla.
+
+sql:
+
+     SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/dmlsink/`
+
+
+![image](https://github.com/user-attachments/assets/3f5e8eab-9b8b-49c9-aae6-4bfdff741de7)
+
+Verificamos la creación en el volumes/deltavol/dmlsink
+
+![image](https://github.com/user-attachments/assets/c0d9ec85-94cb-4fd3-ba1d-527c5c13b2e5)
+
+_________________________________________________________________________________________________________________________________________
+### UPDATE
+
+sql:
+
+     UPDATE delta.`/Volumes/deltalakeall/default/deltavol/dmlsink/` 
+     SET income = 100 WHERE cust_id = 5
+
+
+![image](https://github.com/user-attachments/assets/8b75e8c1-6d51-4330-8fad-59092bc0c326)
+
+%sql:
+
+      SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/dmlsink/`
+
+
+![image](https://github.com/user-attachments/assets/6082083f-02fe-4cce-b8cc-24fe5dc8c8b5)
+
+____________________________________________________________________________________________________________________________________________
+### UPSERT
+
+Pyhton:
+
+        data = [(1, 100, 'xyz', 1),(9, 200, 'bb', 1),(10, 300, 'cc', 1)]
+        df = spark.createDataFrame(data, ['cust_id', 'income', 'name', 'tip'])
+        display(df)
+
+
+![image](https://github.com/user-attachments/assets/caa92dd7-3865-46b7-bc43-c875eb6e0cde)
+
+Python:
+
+from delta.tables import DeltaTable 
+
+
+Pyhton:
+
+        dlt_obj = DeltaTable.forPath(spark, "/Volumes/deltalakeall/default/deltavol/dmlsink/")
+
+        dlt_obj.alias("trg").merge(df.alias("src"), "trg.cust_id = src.cust_id")\
+            .whenMatchedUpdateAll()\
+            .whenNotMatchedInsertAll()\
+            .execute()
+
+
+![image](https://github.com/user-attachments/assets/d4a67c75-b5e8-4382-b6f0-1b02a2286ebd)
+
+**🎯 EXPLICACION DEL CODIGO.**
+
+"Actualiza o inserta registros en la tabla Delta dependiendo de si ya existen o no"
+__________________________________________________________________________________________________________________________________________________________________________________________________________
+**🔍 Desglose Rápido**
+
+| Línea | Significado |
+|-------|-------------|
+| DeltaTable.forPath(spark, "/Volumes/...") | Carga la tabla Delta existente desde una ruta específica |
+| .alias("trg") |	La tabla se llamará "trg" (target/destino) en la operación |
+| .merge(df.alias("src"), "trg.cust_id = src.cust_id") | Combina el DataFrame con la tabla usando cust_id como clave de comparación |
+| .whenMatchedUpdateAll() | Si el registro YA EXISTE (coincide la clave), ACTUALIZA todos los campos |
+| .whenNotMatchedInsertAll() | Si el registro NO EXISTE (no coincide la clave), INSERTA un nuevo registro |
+| .execute() | Ejecuta la operación |
+
+sql:
+                
+         SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/dmlsink/`
+
+
+![image](https://github.com/user-attachments/assets/c715ef3f-57bf-4c86-a25e-c7be973b03ec)
+
+Ahora creamos un nuevo directorio.
+
+![image](https://github.com/user-attachments/assets/691da364-2093-4498-bc38-cf4b3a5d6338)
+
+Y creamos un nuevo cuaderno llamado 5_deltalake.
+
+Python:
+       
+        data = [(1, 100, 'xyz', 1),(9, 200, 'bb', 1),(10, 300, 'cc', 1)]
+        df = spark.createDataFrame(data, ['cust_id', 'income', 'name', 'tip'])
+        display(df)
+
+
+![image](https://github.com/user-attachments/assets/20263db2-484d-44c9-b4d6-906ff44c2adb)
+
+Python:
+
+        df.write.format("delta")\
+            .mode("append")\
+            .save("/Volumes/deltalakeall/default/deltavol/schemalevel")
+
+
+![image](https://github.com/user-attachments/assets/e5504c1a-9684-4744-bf5d-2c1450bd50ab)
+
+Verificamos que haya sido creado.
+
+![image](https://github.com/user-attachments/assets/727d71b8-09e0-4540-ba06-c68697a8c7bc)
+
+%sql:
+
+      -- Enable column mapping first
+      ALTER TABLE delta.`/Volumes/deltalakeall/default/deltavol/schemalevel/`
+      SET TBLPROPERTIES ('delta.columnMapping.mode' = 'name');
+
+      -- Now rename the column
+      ALTER TABLE delta.`/Volumes/deltalakeall/default/deltavol/schemalevel/`
+      RENAME COLUMN name TO customer_name
+
+![image](https://github.com/user-attachments/assets/8b5e48fc-1686-436b-83e0-6c3ff5bb5412)
+
+sql:
+
+     SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/schemalevel/`
+
+
+![image](https://github.com/user-attachments/assets/2d02970a-5f2f-4b4a-918b-093580503a87)
+
+Python:
+
+        df = spark.read.format("json")\
+                    .load("/Volumes/deltalakeall/default/deltavol/schemalevel/_delta_log/00000000000000000002.json")
+        display(df)
+
+
+![image](https://github.com/user-attachments/assets/883b0139-036b-44d7-b0d2-fcfeae9e29a0)
+
+__________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### TABLE UTILITY COMMANDS
+
+sql:
+
+     DESCRIBE deltalakeall.default.first_table
+
+
+![image](https://github.com/user-attachments/assets/d03a3d90-6cb1-48ae-8b23-7a1a6a622897)
+
+Ahora otra forma de describir la tabla.
+
+sql:
+
+     DESCRIBE EXTENDED deltalakeall.default.first_table
+
+
+![image](https://github.com/user-attachments/assets/c5c09350-504a-4da1-a745-8ae51ab9f7e3)
+
+Ahora pasaremos a ver historiales.
+
+SQL:
+
+     DESCRIBE HISTORY delta.`/Volumes/deltalakeall/default/deltavol/dmlsink/`
+
+
+![image](https://github.com/user-attachments/assets/4e04486f-a91e-4a68-a2c9-8fd1de8fd781)
+
+sql:
+
+     RESTORE delta.`/Volumes/deltalakeall/default/deltavol/dmlsink/`
+     TO VERSION AS OF 5
+
+
+![image](https://github.com/user-attachments/assets/76d0701c-c21e-4061-9477-858302ebb255)
+
+sql:
+
+     SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/dmlsink/`
+     VERSION AS OF 5
+
+
+![image](https://github.com/user-attachments/assets/31d3de98-8494-46a8-989e-ae7527e57937)
+
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Viajar en el tiempo.
+
+%sql:
+
+      SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/dmlsink/`
+      TIMESTAMP AS OF '2026-07-02T00:32:37.000+00:00'
+
+
+![image](https://github.com/user-attachments/assets/69d8aa99-6e5a-4fc9-a461-b10bca0f05a9)
+
+%sql:
+
+      SHOW TBLPROPERTIES deltalakeall.default.first_table
+
+
+![image](https://github.com/user-attachments/assets/f97b07ed-d84c-49c1-9c8b-da8de9d78d67)
+
+%sql:
+
+      SHOW TBLPROPERTIES delta. `/Volumes/deltalakeall/default/deltavol/dmlsink`
+
+
+![image](https://github.com/user-attachments/assets/8d17543e-a1af-489d-9b91-5eb8b6b53d95)
+
+__________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Vaciar datos
+
+sql:
+
+     VACUUM delta. `/Volumes/deltalakeall/default/deltavol/dmlsink/` RETAIN 0 HOURS
+_________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Clonación profunda.
+
+![image](https://github.com/user-attachments/assets/4e5b81f2-52c7-42ee-8e0e-4dc7cb08b1ea)
+
+__________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### Clonación Superficial
+
+%sql:
+
+      CREATE TABLE deltalakeall.default.clonetblshallow
+      SHALLOW CLONE deltalakeall.default.first_table
+
+
+![image](https://github.com/user-attachments/assets/dee78171-0d81-4c92-a17e-d3ed8745b004)
+
+___________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### UNIFROM
+
+sql:
+
+     CREATE TABLE IF NOT EXISTS deltalakeall.default.clonetbl
+     USING DELTA TBLPROPERTIES(
+         'delta.enableIcebergCompatV2' = 'true',
+         'delta.universalFormat.enabledFormats' = 'iceberg'
+     );
+
+
+![image](https://github.com/user-attachments/assets/7c44dae4-13dd-4a21-80c8-631ab1accf2a)
+
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### OPTIMIZATION
+
+Creamos un nuevo directorio en volumes
+
+![image](https://github.com/user-attachments/assets/c95cf775-2241-418d-a408-ead6fce30353)
+
+Creamos un dataframe.
+
+Python:
+
+        df = spark.read.table("deltalakeall.default.clonetbl")
+
+
+![image](https://github.com/user-attachments/assets/af11e740-f273-4ba2-b17e-2fec1302d501)
+
+Python:
+
+        Display(df)
+
+
+![image](https://github.com/user-attachments/assets/7a7ec20e-e6d4-440a-80de-a53b7a4014a1)
+
+Python:
+
+        df.write.format("delta").mode("append").save("/Volumes/deltalakeall/default/deltavol/optimization")
+
+
+![image](https://github.com/user-attachments/assets/69cf9ad8-ad13-4048-a536-169b39ec1beb)
+
+Luego de dar play 3 veces, veremos los archivos en volúmenes.
+
+![image](https://github.com/user-attachments/assets/845feff4-9a84-4d9d-b4d9-668fa0bc6afd)
+
+Ahora lo optimizaremos.
+
+sql:
+
+     OPTIMIZE delta.`/Volumes/deltalakeall/default/deltavol/optimization/`
+
+
+![image](https://github.com/user-attachments/assets/6f97111d-f86c-44dc-b46e-6a9420aadadd)
+
+sql:
+
+     DESCRIBE HISTORY delta.`/Volumes/deltalakeall/default/deltavol/optimization`
+
+
+![image](https://github.com/user-attachments/assets/2e107189-a200-4e69-ac07-17ee67933c43)
+
+Luego veremos el cuarto archivo optimizado.
+
+![image](https://github.com/user-attachments/assets/413ba883-b90b-4c9e-870a-5541779e1b40)
+
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### ZORDER
+
+sql:
+
+     SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/optimization`
+
+
+![image](https://github.com/user-attachments/assets/30060427-f1b9-4706-9337-0ebea9e3479e)
+
+sql:
+
+     SELECT * FROM delta.`/Volumes/deltalakeall/default/deltavol/optimization`
+     WHERE cust_id = 1
+
+
+![image](https://github.com/user-attachments/assets/8a49d98d-485f-4151-beed-663accbbd90e)
+
+sql:
+
+     OPTIMIZE delta.`/Volumes/deltalakeall/default/deltavol/optimization/` ZORDER BY (cust_id)
+
+
+![image](https://github.com/user-attachments/assets/e48052c2-dabd-4593-881a-36574463b3b0)
+
+____________________________________________________________________________________________________________________________________________________________________________________________________________________________
+### LIQUID CLUSTERING
+
+sql:
+
+     ALTER TABLE deltalakeall.default.clonetbl
+     CLUSTER BY (cust_id)
+
+![image](https://github.com/user-attachments/assets/47b6ecf5-d6b7-4e75-a90d-ef60dbcc5a1a)
+
+
+sql:
+
+     ALTER TABLE deltalakeall.default.clonetbl
+     CLUSTER BY AUTO 
+
+![image](https://github.com/user-attachments/assets/a63bf865-c2b1-46f8-b8c2-7f27f8b243f8)
+
+
+
+
+
+
+
+
+
+
+
+
